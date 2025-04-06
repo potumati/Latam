@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS voos (
     dia_da_semana_volta TEXT,
     dias_viagem INTEGER,
     tempo_de_voo TEXT,
-    preco TEXT,
+    preco REAL,
     url TEXT
 )
 """)
@@ -174,6 +174,8 @@ while data_atual <= data_final:
                 "url": url
             }
 
+            price = price.replace("BRL ", "").replace(".", "").replace(",", ".")
+            price = float(price)
 
             conn = sqlite3.connect(db_name)
             cursor = conn.cursor()
@@ -189,7 +191,7 @@ while data_atual <= data_final:
         resultado['dia da semana volta'],
         resultado['dias viagem'],
         resultado['tempo de vôo'],
-        resultado['preço'],
+        price,
         resultado['url']
     ))
             conn.commit()
@@ -209,10 +211,10 @@ for resultado in resultados:
 df = pd.DataFrame(resultados)
 
 # Salvar dados em arquivo HTML com tabela e link no URL
-df.to_html(f"resultados-{origin}-{destination}-{data_inicial}.html", index=False, escape=False, render_links=True)
-os.startfile(f"resultados-{origin}-{destination}-{data_inicial}.html")
+#df.to_html(f"resultados-{origin}-{destination}-{data_inicial}.html", index=False, escape=False, render_links=True)
+#os.startfile(f"resultados-{origin}-{destination}-{data_inicial}.html")
 
 # Salvar os resultados em um arquivo Excel
 df.to_excel(f"resultados-{origin}-{destination}-{data_inicial}.xlsx", index=False)
-os.startfile(f"resultados-{origin}-{destination}-{data_inicial}.xlsx")
+#os.startfile(f"resultados-{origin}-{destination}-{data_inicial}.xlsx")
 

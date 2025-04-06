@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de Voos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resultados de Voos</h1>
+    <input type="file" id="upload-db" accept=".db" />
+    <table id="voos-table">
+        <thead>
+            <tr>
+                <th><span onclick="sortTable(0)">Ida</span><br><input type="text" class="filter-input" onkeyup="filterTable(0)" placeholder="Filtrar por Ida"></th>
+                <th><span onclick="sortTable(1)">Dia da Semana (Ida)</span><br><input type="text" class="filter-input" onkeyup="filterTable(1)" placeholder="Filtrar por Dia da Semana"></th>
+                <th><span onclick="sortTable(2)">Hora da Ida</span><br><input type="text" class="filter-input" onkeyup="filterTable(2)" placeholder="Filtrar por Hora"></th>
+                <th><span onclick="sortTable(3)">Volta</span><br><input type="text" class="filter-input" onkeyup="filterTable(3)" placeholder="Filtrar por Volta"></th>
+                <th><span onclick="sortTable(4)">Dia da Semana (Volta)</span><br><input type="text" class="filter-input" onkeyup="filterTable(4)" placeholder="Filtrar por Dia da Semana"></th>
+                <th><span onclick="sortTable(5)">Dias de Viagem</span><br><input type="text" class="filter-input" onkeyup="filterTable(5)" placeholder="Filtrar por Dias"></th>
+                <th><span onclick="sortTable(6)">Tempo de Voo</span><br><input type="text" class="filter-input" onkeyup="filterTable(6)" placeholder="Filtrar por Tempo"></th>
+                <th><span onclick="sortTable(7)">Preço</span><br><input type="text" class="filter-input" onkeyup="filterTable(7)" placeholder="Filtrar por Preço"></th>
+                <th><span onclick="sortTable(8)">URL</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Os dados serão preenchidos aqui via JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById("upload-db").addEventListener("change", async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Carregar o arquivo SQLite
+            const arrayBuffer = await file.arrayBuffer();
+            const SQL = await initSqlJs({ locateFile: fileName => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${fileName}` });
+            const db = new SQL.Database(new Uint8Array(arrayBuffer));
+
+            // Executar a consulta SQL
+            const query = "SELECT ida, dia_da_semana_ida, ida_hora, volta, dia_da_semana_volta, dias_viagem, tempo_de_voo, preco, url FROM voos";
+            const results = db.exec(query);
+
+            if (results.length > 0) {
+                const tableBody = document.getElementById("voos-table").querySelector("tbody");
+                tableBody.innerHTML = ""; // Limpar a tabela antes de preencher
+
+                const rows = results[0].values;
+                rows.forEach(row => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${row[0]}</td>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                        <td>${row[3]}</td>
+                        <td>${row[4]}</td>
+                        <td>${row[5]}</td>
+                        <td>${row[6]}</td>
+                        <td>${row[7]}</td>
+                        <td><a href="${row[8]}" target="_blank">Link</a></td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } else {
+                alert("Nenhum dado encontrado no banco de dados.");
+            }
+
+            db.close();
+        });
+
+        // Função para ordenar a tabela
+        function sortTable(columnIndex) {
+            const table = document.getElementById("voos-table");
+            const rows = Array.from(table.rows).slice(1); // Ignorar o cabeçalho
+            const isAscending = table.getAttribute("data-sort-order") === "asc";
+            const direction = isAscending ? 1 : -1;
+
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].innerText;
+                const bText = b.cells[columnIndex].innerText;
+
+                // Tentar converter para número, caso contrário comparar como string
+                const aValue = isNaN(aText) ? aText : parseFloat(aText);
+                const bValue = isNaN(bText) ? bText : parseFloat(bText);
+
+                return aValue > bValue ? direction : aValue < bValue ? -direction : 0;
+            });
+
+            // Reordenar as linhas na tabela
+            rows.forEach(row => table.tBodies[0].appendChild(row));
+
+            // Alternar a ordem de classificação
+            table.setAttribute("data-sort-order", isAscending ? "desc" : "asc");
+        }
+
+        
+
+        // Função para filtrar a tabela
+        function filterTable(columnIndex) {
+            const input = document.querySelectorAll(".filter-input")[columnIndex];
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById("voos-table");
+            const rows = table.tBodies[0].rows;
+
+            Array.from(rows).forEach(row => {
+                const cell = row.cells[columnIndex];
+                if (cell) {
+                    const cellText = cell.textContent || cell.innerText;
+                    row.style.display = cellText.toLowerCase().includes(filter) ? "" : "none";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
