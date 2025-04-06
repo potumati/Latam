@@ -156,8 +156,8 @@ while data_atual <= data_final:
                 duration = "0"
 
             # Ignore if duration is greater than 12 hours
-            if int(duration) > 12:
-                continue
+            #if int(duration) > 12:
+            #    continue
 
             # Pegar apenas horário da origin_time (23:05\nGRU)
             origin_time = origin_time.split("\n")[0].strip()
