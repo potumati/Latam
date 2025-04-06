@@ -11,10 +11,13 @@ import sqlite3
 conn = sqlite3.connect("resultados_voos.db")
 cursor = conn.cursor()
 
+hoje = datetime.now().strftime("%Y-%m-%d")
+
 # Criar a tabela para armazenar os resultados, se ainda não existir
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS voos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dia_consulta TEXT,
     ida TEXT,
     dia_da_semana_ida TEXT,
     ida_hora TEXT,
@@ -172,9 +175,10 @@ while data_atual <= data_final:
             conn = sqlite3.connect("resultados_voos.db")
             cursor = conn.cursor()
             cursor.execute("""
-    INSERT INTO voos (ida, dia_da_semana_ida, ida_hora, volta, dia_da_semana_volta, dias_viagem, tempo_de_voo, preco, url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO voos (dia_consulta, ida, dia_da_semana_ida, ida_hora, volta, dia_da_semana_volta, dias_viagem, tempo_de_voo, preco, url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        hoje,
         resultado['ida'],
         resultado['dia da semana'],
         resultado['ida hora'],
