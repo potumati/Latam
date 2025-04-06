@@ -7,30 +7,7 @@ import os
 import sys
 import sqlite3
 
-# Conectar ao banco de dados SQLite (ou criar um novo arquivo de banco de dados)
-conn = sqlite3.connect("resultados_voos.db")
-cursor = conn.cursor()
 
-hoje = datetime.now().strftime("%Y-%m-%d")
-
-# Criar a tabela para armazenar os resultados, se ainda não existir
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS voos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    dia_consulta TEXT,
-    ida TEXT,
-    dia_da_semana_ida TEXT,
-    ida_hora TEXT,
-    volta TEXT,
-    dia_da_semana_volta TEXT,
-    dias_viagem INTEGER,
-    tempo_de_voo TEXT,
-    preco TEXT,
-    url TEXT
-)
-""")
-conn.commit()
-conn.close()
 
 
 #python latam3.py --origin=GRU --destination=NYC --data_inicial=2025-11-01 --quantidade_dias_tentar=1 --tempo_de_viagem=7 --dias_a_mais_pode_durar=1
@@ -94,6 +71,32 @@ dias_a_mais_pode_durar = int(dias_a_mais_pode_durar)
 
 data_atual = datetime.strptime(data_inicial, "%Y-%m-%d")
 data_final = data_atual + timedelta(days=quantidade_dias_tentar)
+
+# Conectar ao banco de dados SQLite (ou criar um novo arquivo de banco de dados)
+db_name = f"resultados_voos{origin}-{destination}.db"
+conn = sqlite3.connect(db_name)
+cursor = conn.cursor()
+
+hoje = datetime.now().strftime("%Y-%m-%d")
+
+# Criar a tabela para armazenar os resultados, se ainda não existir
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS voos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dia_consulta TEXT,
+    ida TEXT,
+    dia_da_semana_ida TEXT,
+    ida_hora TEXT,
+    volta TEXT,
+    dia_da_semana_volta TEXT,
+    dias_viagem INTEGER,
+    tempo_de_voo TEXT,
+    preco TEXT,
+    url TEXT
+)
+""")
+conn.commit()
+conn.close()
 
 # Lista para armazenar os resultados
 resultados = []
@@ -172,7 +175,7 @@ while data_atual <= data_final:
             }
 
 
-            conn = sqlite3.connect("resultados_voos.db")
+            conn = sqlite3.connect(db_name)
             cursor = conn.cursor()
             cursor.execute("""
     INSERT INTO voos (dia_consulta, ida, dia_da_semana_ida, ida_hora, volta, dia_da_semana_volta, dias_viagem, tempo_de_voo, preco, url)
