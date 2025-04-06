@@ -11,6 +11,7 @@ import sqlite3
 
 
 #python latam3.py --origin=GRU --destination=NYC --data_inicial=2025-11-01 --quantidade_dias_tentar=1 --tempo_de_viagem=7 --dias_a_mais_pode_durar=1
+#python latam5.py --origin=BSB --destination=REC --data_inicial=2025-07-01 --quantidade_dias_tentar=70 --tempo_de_viagem=7 --dias_a_mais_pode_durar=2
 
 origin = ""
 destination = ""
